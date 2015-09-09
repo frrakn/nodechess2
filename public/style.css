@@ -1,0 +1,222 @@
+body, div, p, span, h1, h2, h3, h4, h5, h6, input{
+  font-family: "Times New Roman";
+  margin: 0 0 0 0;
+  padding: 0 0 0 0;
+}
+
+.piece {
+  height: 4.5vw;
+  max-height: 9vh;
+	z-index: 1;
+}
+
+.titleblock {
+  height: 4vh;
+  font-weight: bold;
+  background-color: #000000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.titleblock p {
+  font-size: 2vh;
+  color: #EEEEEE;
+}
+
+.label {
+  position: absolute;
+  font-size: 1vw;
+  z-index: 2;
+}
+
+.letter {
+  top: 0.25vw;
+  left: 0.25vw;
+}
+
+.number {
+  bottom: 0vw;
+  right: 0.5vw;
+}
+
+.container {
+  background-color: #CCCCCC;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100%;
+}
+
+.top {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+}
+
+.boardrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  flex: 1;
+  position: relative;
+}
+
+.wplayer{
+  margin: 0 2vw 0 0;
+  flex-wrap: wrap-reverse;
+}
+
+.bplayer{
+  margin: 0 0 0 2vw;
+  flex-wrap: wrap;
+}
+
+.capturepiece {
+  flex 1 1 1;
+  display: flex;
+  flex-direction: column;
+  height: 36vw;
+  max-height: 72vh;
+  align-items: center;
+  justify-content: center;
+  width: 9vw;
+  max-width: 18vh;
+}
+
+.squarewrapper {
+  position: relative;
+}
+
+.bcapture {
+  border: 1px solid #0000FF;
+  flex 1 1 1;
+  display: flex;
+  flex-direction: 
+}
+
+.boardcol {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  flex: 1 1 1;
+}
+
+.squarewrapper {
+  position: relative;
+}
+
+.squareimg {
+  height: 40vw;
+  max-height: 75vh;
+  display: block;
+}
+
+.chessboard {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  border: 2px solid #111111;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.boardsquare {
+  float: left;
+  height: 12.5%;
+  width: 12.5%;
+  border: 0px;
+  position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.light {
+  background-color: #FFFFB5;
+  color: #A37547;
+}
+
+.dark{
+  background-color: #A37547;
+  color: #FFFFB5;
+}
+
+.bgmvlog {
+  border: 1px solid #111111;
+  background-color: #EEEEEE;
+  width: 20%;
+  display: flex;
+  flex-direction: column;
+}
+
+.pgntblwrapper {
+  flex: 1;
+  overflow-y: auto;
+  position: relative;
+}
+
+.pgntbl {
+  width: 100%;
+  font-size: 2vh;
+  text-align: center;
+  vertical-align: center;
+  table-layout: fixed;
+	margin: 5px 0 0 0;
+}
+
+.pgntbl tr th {
+  font-weight: bold;
+}
+
+.pgntbl tbody {
+  width: 100%;
+}
+
+.invis {
+  height: 0px;
+}
+
+.pgncol1 {
+  width: 20%;
+}
+
+.pgncol2 {
+  width: 40%;
+}
+
+.pgncol3 {
+  width: 40%;
+}
+
+.activepgn {
+  background-color: #CCCCFF;
+  font-weight: bold;
+}
+
+.bgchat {
+  border: 1px solid #111111;
+  height: 20%;
+  background-color: #EEEEEE;
+  display: flex;
+  flex-direction: column;
+}
+
+.chatmessages {
+  padding: 0.5vh 0.5vw 0.5vh 0.5vw;
+  flex: 1;
+	overflow-y: auto;
+}
+
+.bgchatinput {
+  border: 1px solid #000000;
+  height: 2.5vh;
+}
+
+.chatinput {
+  width: 100%;
+  font-size: 2vh;
+}
