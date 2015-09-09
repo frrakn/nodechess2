@@ -143,10 +143,14 @@ $("document").ready(function(){
         }
     });
 
+		var name = prompt("Please enter alias:");
+
 		var socket = io.connect();
-		socket.on('message', function(data){
-			alert("You are " + data.num);
-		};	
+		socket.emit("chess_join", name);
+		socket.emit("chat_join", name);
+		ocket.on("assign", function(data){
+			alert("You are " + data);
+		});	
 
     //TESTING CODE
     setFEN(initialFEN);

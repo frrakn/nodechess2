@@ -9,40 +9,27 @@ var io = require("socket.io").listen(server);
 //  Chess.js is a reduced version of nodechess that will
 //  execute the chess logic
 var chess = require("./chess.js");
+var spectators = [];
+var white;
+var black;
 
 app.use(express.static(__dirname + "/public"));
 
 io.on("connection", function(socket){
-  socket.on("join", function(data){
-    socket.appUser = data.user;
-    console.log(data.user + " has joined.");
-    
-    //  BROADCAST USERJOIN EVENT
-    socket.broadcast.emit("userJoin", {
-      user: data.user,
-      time: new Date()
-    });
-    
-    //  **ALSO ADD INIT HERE**
-  });
-  socket.on("message", function(data){
-    console.log(socket.appUser + " (" + data.time + "): " + data.message);
-    
-    //  BROADCAST USERCHAT EVENT
-    socket.broadcast.emit("userChat", {
-      user: socket.appUser, 
-      time: data.time, 
-      message: data.message
-    });
-  });
+	socket.emit("message");
+	if(white === undefined){
+		white = socket;
+		white.emit("assign", "white player");
+	}
+	else if(black === undefined){
+		black = socket;
+		black.emit("assign", "black player");
+	}
+	else{
+		spectators.push(socket);
+		socket.emit("assign", "spectator");
+	}
   socket.on("disconnect", function(){
-    console.log(socket.appUser + " has disconnected.");
-    
-    //  BROADCAST USERLEAVE EVENT
-    socket.broadcast.emit("userLeave", {
-      user: socket.appUser, 
-      time: new Date()
-    });
   });
 });
 server.listen(8080);
