@@ -217,10 +217,36 @@ var Game = function Game(){
 	this.PGN = function PGN(move){
 		var disambigRank;
 		var disambigCol;
-		var output;
+		var output = "";
 		_.each(this.validMoves, function(element, index, list){
+			if(element !== move && element.chessPiece.type === move.chessPiece.type){
+				if(element.coordinates_old.rank !== move.coordinates_old.rank){
+					disambigRank = move.coordinates_old.rank - this.chessBoard.SENTINEL_PADDING;
+				}
+				else{
+					disambigCol = move.coordinates_old.file - this.chessBoard.SENTINEL_PADDING;
+				}
+			}
+		});
 
+		switch(MOVE_TYPE[move.moveType]){
+			case 'Move':
+				if(PIECE_TYPE[move.chessPiece.type] === "Pawn"){
+				}
+				else{
+				}
+				break;
+			case 'CastleKing':
+				output = "O-O";
+				break;
+			case 'CastleQueen':
+				output = "O-O-O";
+				break;
+			case 'INVALID':
+				output = "INVALID";
+				break;
 		}
+		return output;
 	}
 
   this.executeMove = function executeMove(move, setFlags){
