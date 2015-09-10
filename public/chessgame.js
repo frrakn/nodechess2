@@ -148,7 +148,7 @@ $("document").ready(function(){
 		var socket = io.connect();
 		socket.emit("chess_join", name);
 		socket.emit("chat_join", name);
-		ocket.on("assign", function(data){
+		socket.on("assign", function(data){
 			alert("You are " + data);
 		});	
 

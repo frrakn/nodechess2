@@ -214,13 +214,22 @@ var Game = function Game(){
     throw 'Sorry, move is not valid in context of board.';
   };
 
+	this.PGN = function PGN(move){
+		var disambigRank;
+		var disambigCol;
+		var output;
+		_.each(this.validMoves, function(element, index, list){
+
+		}
+	}
+
   this.executeMove = function executeMove(move, setFlags){
     var player = this.turn ? this.whitePlayer : this.blackPlayer;
     var opponent = this.turn ? this.blackPlayer : this.whitePlayer;
 
     //  Move must be valid if Flags are going to be set
     if(!setFlags || this.validatedMove){
-      this.moveLog.push(move);
+      this.moveLog.push([move, this.PGN(move)]);
       switch(MOVE_TYPE[move.moveType]){
         case 'Move':          
           //  Removing captured chess piece
@@ -282,7 +291,7 @@ var Game = function Game(){
   };
 
   this.undoMove = function undoMove(){
-    var move = this.moveLog.pop();
+    var move = this.moveLog.pop()[0];
     var player = this.turn ? this.whitePlayer : this.blackPlayer;
     var opponent = this.turn ? this.blackPlayer : this.whitePlayer;
     switch(MOVE_TYPE[move.moveType]){
@@ -1162,4 +1171,4 @@ var Move = function Move(moveType, chessPiece, coordinates_old, coordinates_new,
   };
 };
 
-//module.exports.Game = Game;
+module.exports.Game = Game;
