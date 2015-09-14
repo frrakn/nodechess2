@@ -4,6 +4,7 @@ var setFEN;
 var setFENRow;
 var getFEN;
 var pieceLookup;
+var self = this;
 
 initialFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 FENFormat = /^(?:[1-8]|n|N|r|R|b|B|p|P|q|Q|k|K)+$/;
@@ -83,7 +84,7 @@ getFEN = function(){
     var currentElement;
 
     letter = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    rows = [1, 2, 3, 4, 5, 6, 7, 8];
+    rows = [8, 7, 6, 5, 4, 3, 2, 1];
     agg = "";
     replacements = [
         ['8', /11111111/gm],
@@ -119,7 +120,7 @@ getFEN = function(){
         agg = agg.replace(e[1], e[0]);
     });
 
-    return agg;
+    return agg.slice(0, agg.length - 1);
 };
 
 $("document").ready(function(){
@@ -140,6 +141,7 @@ $("document").ready(function(){
             $(this).children(".white").appendTo(".wplayer");
             $(this).children(".black").appendTo(".bplayer");
             $(this).append($(ui.draggable));
+						console.log(self.getFEN());
         }
     });
 

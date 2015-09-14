@@ -22,6 +22,9 @@
   */
 
 var _ = require('underscore');
+var Events = require("events");
+
+var TESTING = true;
 
 /** 
   * PLAYER 
@@ -82,7 +85,7 @@ var Game = function Game(){
   this.blackPlayer = new Player(false);
   this.whitePlayer = new Player(true);
   this.chessBoard = new Board();
-  this.interface = new Interface(this);
+  this.interface = new WebInterface(this);
   this.moveLog = [];
 
 
@@ -217,23 +220,48 @@ var Game = function Game(){
 	this.PGN = function PGN(move){
 		var disambigRank;
 		var disambigCol;
+		var curLoc;
+		var nextLoc;
 		var output = "";
 		_.each(this.validMoves, function(element, index, list){
 			if(element !== move && element.chessPiece.type === move.chessPiece.type){
 				if(element.coordinates_old.rank !== move.coordinates_old.rank){
-					disambigRank = move.coordinates_old.rank - this.chessBoard.SENTINEL_PADDING;
+					disambigRank = true;
 				}
 				else{
-					disambigCol = move.coordinates_old.file - this.chessBoard.SENTINEL_PADDING;
+					disambigCol = true;
 				}
 			}
 		});
 
+		nextLoc = this.chessBoard.getLocation(move.coordinates_new);
+		curLoc = this.chessBoard.getLocation(move.coordinates_old);
+
 		switch(MOVE_TYPE[move.moveType]){
 			case 'Move':
 				if(PIECE_TYPE[move.chessPiece.type] === "Pawn"){
+					if(move.captureFlag){
+						output += curLoc.file + "x";
+					}
+
+					output += nextLoc.file + nextLoc.rank;
+
+					if(move.promoteFlag){
+						output += "=" + PIECE_ABBREV[move.promoteType];
+					}
 				}
 				else{
+					output += PIECE_ABBREV[move.chessPiece.pieceType];
+					if(disambigCol){
+						output += curLoc.file;
+					}
+					if(disambigRank){
+						output += curLoc.rank;
+					}
+					if(move.captureFlag){
+						output += "x";
+					}
+					output += nextLoc.file + nextLoc.rank;
 				}
 				break;
 			case 'CastleKing':
@@ -425,43 +453,46 @@ var Game = function Game(){
     }
   };
 
-  /*this.run = function run(){
+  this.run = function run(){
+		var self = this;
     this.init();
 
-    //  TESTING CODE
-    while(true){
-      try{
-        eval(readline.prompt());
-      }
-      catch(err){
-        console.log(err);
-      }
-    }
+   //  TESTING CODE
+   //  while(true){
+   //    try{
+   //      eval(readline.prompt());
+   //    }
+   //    catch(err){
+   //      console.log(err);
+   //    }
+   //  }
 
     //  Loops for each turn while gameOver flag is false
     this.resolveBoard();
-    while(!this.gameOver){
-      this.displayState();
-      //  Returns to retry getting Move as long as current Move is invalid
-      while(!this.validatedMove){
-        try{
-          this.nextMove = this.matchMove(this.interface.getMove());
-        }
-        catch(err){
-          console.log(err);
-          console.log("\n" + err.stack);
-        }
-      }
-      this.executeMove(this.nextMove, true);
+		this.validatedMove = true;
+		this.interface.on("move", function(FEN){
+			self.nextMove = self.validMoves[FEN];
+			console.log(self.nextMove);
+			if(self.nextMove){
+				self.executeMove(self.nextMove, true);
 
-      //  Set state for next turn
-      this.turn = !this.turn;
-      this.validatedMove = false;
+				//  Set state for next turn
+				self.turn = !self.turn;
+				//  self.validatedMove = false; //  Don't need this if using web interface
 
-      //  Down here b/c gameOver takes us out of loop
-      this.resolveBoard();
-    }
-  };*/
+				//  Down here b/c gameOver takes us out of loop
+				self.resolveBoard();
+				self.interface.emit("update", [self.chessBoard.toFEN(), self.moveLog[self.moveLog.length - 1]]);
+				
+				if(self.gameOver){
+					self.interface.emit("gameover", self.result);
+				}
+			}
+			else{
+				self.interface.emit("invalid");
+			}
+    });
+  };
 };
 
 
@@ -846,6 +877,15 @@ var Board = function Board(){
             }
   };
 
+	this.getLocation = function getLocation(coordinates){
+		var output = {};
+		
+		output.file = String.fromCharCode("A".charCodeAt(0) + coordinates.file - this.SENTINEL_PADDING);
+		output.rank = coordinates.rank - this.SENTINEL_PADDING + 1;
+
+		return output;
+	};
+
   this.addPiece = function addPiece(piece){
     this.contents[piece.coordinates.file][piece.coordinates.rank] = piece;
   };
@@ -1015,6 +1055,20 @@ var ATTACK_DIRECTIONS = {
   'Diagonal': PIECE_DIRECTIONS['Bishop'],
   'Knight':   PIECE_DIRECTIONS['Knight']
 };
+
+/**
+	* Web Interface
+	* 
+	* Listens for moves
+	* Emits updates
+	*
+	*/
+
+var WebInterface = function WebInterface(game){
+	this.chessGame = game;
+}
+
+WebInterface.prototype.__proto__ = Events.EventEmitter.prototype;
 
 /** 
   * Interface
@@ -1198,3 +1252,31 @@ var Move = function Move(moveType, chessPiece, coordinates_old, coordinates_new,
 };
 
 module.exports.Game = Game;
+
+//  Short testing suite
+if(TESTING){
+	var g = new Game();
+	g.run();
+	g.interface.on("update", function(arr){
+		console.log(arr[1]);
+	});
+	g.interface.on("invalid", function(err){
+		console.log("Invalid! " + err);
+	});
+	process.stdin.resume();
+	process.stdin.on("data", function(data){
+		if(data.slice(0, data.length - 1).toString() === "moves"){
+			console.log(Object.keys(g.validMoves));
+		}
+		else if(data.slice(0, data.length - 1).toString() === "movesv"){
+			console.log(g.validMoves);
+		}
+		else if(data.slice(0, data.length - 1).toString() === "knight"){
+			console.log(g.chessBoard.getPiece({file:7, rank:7}));
+		}
+		else{
+			g.interface.emit("move", data.slice(0, data.length - 1).toString());
+			g.displayState();
+		}
+	});
+}
