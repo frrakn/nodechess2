@@ -739,7 +739,7 @@ var Piece = function Piece(type, owner, coordinates, board){
           newMove.coordinates_new = _.clone(this.coordinates);
           this.board.addCoordinates(newMove.coordinates_new, diagonals[index]);
           var EPPiece = this.board.getPiece(element);
-          if(EPPiece && EPPiece.owner && (EPPiece.owner.color !== this.owner.color) && EPPiece.owner.doublePush && (EPPiece.owner.doublePushPawn === EPPiece)){
+          if(EPPiece && EPPiece.owner && (EPPiece.owner.color !== this.owner.color) && !this.board.getPiece(newMove.coordinates_new) && EPPiece.owner.doublePush && (EPPiece.owner.doublePushPawn === EPPiece)){
             newMove.captureFlag = true;
             newMove.capturePiece = EPPiece;
 
