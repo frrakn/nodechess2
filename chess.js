@@ -24,7 +24,7 @@
 var _ = require('underscore');
 var Events = require("events");
 
-var TESTING = true;
+var TESTING = false;
 
 /** 
   * PLAYER 
@@ -308,6 +308,9 @@ var Game = function Game(){
               player.doublePush = true;
               player.doublePushPawn = move.chessPiece;
             }
+						else{
+							player.doublePush = false;
+						}
           }
           break;
         case 'CastleKing':
@@ -1255,6 +1258,7 @@ module.exports.Game = Game;
 
 //  Short testing suite
 if(TESTING){
+	var argument;
 	var g = new Game();
 	g.run();
 	g.interface.on("update", function(arr){
@@ -1265,14 +1269,15 @@ if(TESTING){
 	});
 	process.stdin.resume();
 	process.stdin.on("data", function(data){
-		if(data.slice(0, data.length - 1).toString() === "moves"){
+		argument = data.slice(0, data.length - 1).toString().split(" ");
+		if(argument[0] === "moves"){
 			console.log(Object.keys(g.validMoves));
 		}
-		else if(data.slice(0, data.length - 1).toString() === "movesv"){
+		else if(argument[0] === "movesv"){
 			console.log(g.validMoves);
 		}
-		else if(data.slice(0, data.length - 1).toString() === "knight"){
-			console.log(g.chessBoard.getPiece({file:7, rank:7}));
+		else if(argument[0] === "getPiece"){
+			console.log(g.chessBoard.getPiece({file: parseInt(argument[1]), rank: parseInt(argument[2])}));
 		}
 		else{
 			g.interface.emit("move", data.slice(0, data.length - 1).toString());
