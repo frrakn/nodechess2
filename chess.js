@@ -413,7 +413,7 @@ var Game = function Game(){
           validMoves[this.chessBoard.toFEN()] = element;
           this.chessBoard.movePiece(king, region[region.length - 1]);
         }
-        else if(element.capturedPiece && !_.isEqual(element.capturedPiece.coordinates, element.coordinates_new)){
+        else if(element.capturePiece && !(element.capturePiece.coordinates.file === element.coordinates_new.file && element.capturePiece.coordinates.rank === element.coordinates_new.rank)){
           element.captureFlag = false;
           this.executeMove(element, false);
             if(!this.chessBoard.getAttackers(player.king.coordinates, !this.turn)){
@@ -1246,7 +1246,7 @@ var Move = function Move(moveType, chessPiece, coordinates_old, coordinates_new,
   this.promoteType = PIECE_TYPE[promoteType];
 
   this.clone = function clone(){
-    //  Leave chessPiece and capturedPiece as pointers,
+    //  Leave chessPiece and capturePiece as pointers,
     //  'deep'-clone the coordinates
     return new Move(MOVE_TYPE[this.moveType], this.chessPiece, _.clone(this.coordinates_old), _.clone(this.coordinates_new), this.captureFlag, this.capturePiece, this.promoteFlag, this.promoteType);
   };
