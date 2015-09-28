@@ -148,7 +148,11 @@ getFEN = function(){
 $("document").ready(function(){
 		var name = prompt("Please enter alias:");
 		var assignment;
-		var turn; 
+		var turn;
+		var newElement;
+		var temp;
+		var lastMove;
+		var totalMoves = 0;
 
 		var socket = io.connect();
 		socket.emit("chess_join", name);
@@ -166,6 +170,30 @@ $("document").ready(function(){
 			turn = move;
 		});
 		socket.on("pgn", function(move){
+			if(!turn && (lastMove !== move)){
+				lastMove = move;
+				totalMoves += 1;
+				newElement = $("<tr>");
+				temp = $("<td>");
+				temp.addClass("pgncol1");
+				newElement.append(temp);
+				temp = $("<td>");
+				temp.addClass("pgncol2");
+				newElement.append(temp);
+				temp = $("<td>");
+				temp.addClass("pgncol3");
+				newElement.append(temp);
+				$(".pgntbl tbody").append(newElement);
+
+				$(".pgntbl tbody tr").filter(":last").find(".pgncol1").text(totalMoves);
+				$(".pgntbl tbody tr").filter(":last").find(".pgncol2").text(move);
+			}
+			else if(lastMove !== move){
+				lastMove = move;
+				$(".pgntbl tbody tr").filter(":last").find(".pgncol3").text(move);
+			}
+			else{
+			}
 		});
 
 		piecesDraggable();

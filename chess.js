@@ -24,7 +24,7 @@
 var _ = require('underscore');
 var Events = require("events");
 
-var TESTING = true;
+var TESTING = false;
 
 /** 
   * PLAYER 
@@ -87,6 +87,7 @@ var Game = function Game(){
   this.chessBoard = new Board();
   this.interface = new WebInterface(this);
   this.moveLog = [];
+	this.check = false;
 
 
   //  Boolean keeps track of game state
@@ -439,11 +440,12 @@ var Game = function Game(){
   this.resolveBoard = function resolveBoard(){
     var player = this.turn ? this.whitePlayer : this.blackPlayer;
     this.validMoves = this.getValidMoves();
+		this.check = this.chessBoard.getAttackers(player.king.coordinates, !this.turn);
     if(!this.validMoves){
       this.gameOver = true;
       this.displayState();
       //  If check
-      if(this.chessBoard.getAttackers(player.king.coordinates, !this.turn)){
+      if(this.check){
         this.result = this.turn ? 'Black player' : 'White player';
         console.log('Checkmate! ' + this.result + ' wins!');
       }
@@ -483,7 +485,15 @@ var Game = function Game(){
 
 				//  Down here b/c gameOver takes us out of loop
 				self.resolveBoard();
-				self.interface.emit("update", [self.chessBoard.toFEN(), self.moveLog[self.moveLog.length - 1]]);
+				if(self.gameOver && self.check){
+					self.moveLog[self.moveLog.length - 1][1] = self.moveLog[self.moveLog.length - 1][1] + "*";
+				}
+				else if(self.check){
+					self.moveLog[self.moveLog.length - 1][1] = self.moveLog[self.moveLog.length - 1][1] + "+";
+				}
+				else{
+				}
+				self.interface.emit("update", [self.chessBoard.toFEN(), self.moveLog[self.moveLog.length - 1][1]]);
 				
 				if(self.gameOver){
 					self.interface.emit("gameover", self.result);
@@ -881,7 +891,7 @@ var Board = function Board(){
 	this.getLocation = function getLocation(coordinates){
 		var output = {};
 		
-		output.file = String.fromCharCode("A".charCodeAt(0) + coordinates.file - this.SENTINEL_PADDING);
+		output.file = String.fromCharCode("a".charCodeAt(0) + coordinates.file - this.SENTINEL_PADDING);
 		output.rank = coordinates.rank - this.SENTINEL_PADDING + 1;
 
 		return output;

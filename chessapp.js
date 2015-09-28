@@ -11,6 +11,7 @@ var io = require("socket.io").listen(server);
 var chess = require("./chess.js");
 var spectators = [];
 var assignments = ["white", "black", "spectator"];
+var moveLog = [];
 var white;
 var black;
 
@@ -57,10 +58,12 @@ io.on("connection", function(socket){
 		}
   });
 	game.interface.on("update", function(arr){
+		console.log("Received");
 		currentFEN = arr[0];
+		moveLog.push(arr[1]);
 		io.emit("fen", arr[0]);
 		io.emit("turn", game.turn);
-		//io.emit("pgn", arr[1]);
+		io.emit("pgn", arr[1]);
 	});
 	game.interface.on("invalid", function(arr){
 		if(game.turn){
@@ -76,6 +79,9 @@ server.listen(8080);
 function initClient(socket){
 		socket.emit("fen", currentFEN);
 		socket.emit("turn", game.turn);
+		for(var i = 0; i < moveLog.length; i++){
+			socket.emit("pgn", moveLog[i]);
+		}
 }
 
 function assignClient(socket, assign){
