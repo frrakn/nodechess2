@@ -24,7 +24,7 @@
 var _ = require('underscore');
 var Events = require("events");
 
-var TESTING = false;
+var TESTING = true;
 
 /** 
   * PLAYER 
@@ -218,27 +218,26 @@ var Game = function Game(){
   };
 
 	this.PGN = function PGN(move){
-		var disambigRank;
-		var disambigCol;
-		var curLoc;
-		var nextLoc;
-		var output = "";
-		_.each(this.validMoves, function(element, index, list){
-			if(element !== move && element.chessPiece.type === move.chessPiece.type){
-				if(element.coordinates_old.rank !== move.coordinates_old.rank){
-					disambigRank = true;
-				}
-				else{
-					disambigCol = true;
-				}
-			}
-		});
-
-		nextLoc = this.chessBoard.getLocation(move.coordinates_new);
-		curLoc = this.chessBoard.getLocation(move.coordinates_old);
-
 		switch(MOVE_TYPE[move.moveType]){
 			case 'Move':
+				var disambigRank;
+				var disambigCol;
+				var curLoc;
+				var nextLoc;
+				var output = "";
+				_.each(this.validMoves, function(element, index, list){
+					if(element !== move && element.chessPiece && move.chessPiece && element.chessPiece.type === move.chessPiece.type && element.coordinates_new.file === move.coordinates_new.file && element.coordinates_new.rank === move.coordinates_new.rank){
+						if(element.coordinates_old.file !== move.coordinates_old.file){
+							disambigCol = true;
+						}
+						else{
+							disambigRank = true;
+						}
+					}
+				});
+
+				nextLoc = this.chessBoard.getLocation(move.coordinates_new);
+				curLoc = this.chessBoard.getLocation(move.coordinates_old);
 				if(PIECE_TYPE[move.chessPiece.type] === "Pawn"){
 					if(move.captureFlag){
 						output += curLoc.file + "x";
@@ -251,7 +250,7 @@ var Game = function Game(){
 					}
 				}
 				else{
-					output += PIECE_ABBREV[move.chessPiece.pieceType];
+					output += PIECE_ABBREV[move.chessPiece.type];
 					if(disambigCol){
 						output += curLoc.file;
 					}
@@ -475,7 +474,6 @@ var Game = function Game(){
 		this.validatedMove = true;
 		this.interface.on("move", function(FEN){
 			self.nextMove = self.validMoves[FEN];
-			console.log(self.nextMove);
 			if(self.nextMove){
 				self.executeMove(self.nextMove, true);
 
@@ -551,7 +549,7 @@ var Piece = function Piece(type, owner, coordinates, board){
           var regions = this.board.castlingRegions[color]['King'];
           var rook = this.board.getPiece(regions[0])
           //  Check King's rook for moves
-          if(!rook.hasMoved){
+          if(rook && !rook.hasMoved){
             //  Checking that way is unobstructed
             if(_.every(regions, function(element, index, list){
               //  if the Piece is the King or the Rook, or undefined
@@ -570,7 +568,7 @@ var Piece = function Piece(type, owner, coordinates, board){
           regions = this.board.castlingRegions[color]['Queen'];
           rook = this.board.getPiece(regions[0])
           //  Check King's rook for moves
-          if(!rook.hasMoved){
+          if(rook && !rook.hasMoved){
             //  Checking that way is unobstructed
             if(_.every(regions, function(element, index, list){
               //  if the Piece is the King or the Rook, or undefined

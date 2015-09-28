@@ -5,6 +5,10 @@ var setFENRow;
 var getFEN;
 var pieceLookup;
 var self = this;
+var imgLookup;
+var currentFEN;
+var DEFAULT_IMG_PATH = "./img/";
+var IMG_SUFFIX = ".png"
 
 initialFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 FENFormat = /^(?:[1-8]|n|N|r|R|b|B|p|P|q|Q|k|K)+$/;
@@ -23,22 +27,39 @@ pieceLookup = {
     'wP': 'P'
 };
 
+function piecesDraggable(){
+  $(".piece").draggable({
+			drag: function (ev, ui) {
+			$(ui.draggable).css("position", "relative");
+    },
+    revert: true,
+    revertDuration: 10
+  });
+}
+
+imgLookup = _.invert(pieceLookup);
+function getImg(pieceType){
+	return DEFAULT_IMG_PATH + imgLookup[pieceType] + IMG_SUFFIX;
+};
+
 setFEN = function setFEN(fen){
     var rows;
     var leftover;
     var letter;
-    $(".piece").addClass("toSet");
+		clearBoard();
     rows = fen.split("/");
-    console.assert(rows.length === 8, "WARNING: Improper FEN with " + rows.length + " rows detected!")
     _.each(rows, setFENRow);
-    leftover = $(".toSet").length;
-    console.assert(leftover === 0, "WARNING: " + leftover + " pieces have not been set!");
-    $(".toSet").removeClass("toSet");
+		piecesDraggable();
 };
+
+clearBoard = function clearBoard(){
+	$(".piece").remove();
+}
 
 setFENRow = function setFENRow(fenRow, rowNum, rows){
     var numchars;
     var currentPiece;
+		var newPiece;
 
     numchars = 0;
     rowNum = 8 - rowNum;
@@ -59,19 +80,20 @@ setFENRow = function setFENRow(fenRow, rowNum, rows){
         if(e >= '1' && e <= '8'){
             numchars += parseInt(e, 10);
         }
-        else if(e >= 'b' && e <= 'r'){
-            letter = String.fromCharCode("a".charCodeAt(0) + numchars);
-            numchars++;
-            currentPiece = $(".toSet").filter(".b" + e.toUpperCase()).first();
-            $("#" + letter + rowNum).append(currentPiece);
-            currentPiece.removeClass("toSet");
-        }
         else{
-            letter = String.fromCharCode("a".charCodeAt(0) + numchars);
-            numchars++;
-            currentPiece = $(".toSet").filter(".w" + e.toUpperCase()).first();
-            $("#" + letter + rowNum).append(currentPiece);
-            currentPiece.removeClass("toSet");
+					letter = String.fromCharCode("a".charCodeAt(0) + numchars);
+					newPiece = $("<img>");
+					newPiece.attr("src", getImg(e));
+					newPiece.addClass(imgLookup[e]);
+					newPiece.addClass("piece");
+					if(e <= 'z'){
+						newPiece.addClass("black");
+					}
+					else{
+						newPiece.addClass("white");
+					}
+          $("#" + letter + rowNum).append(newPiece);
+					numchars++;
         }
     });
 };
@@ -124,36 +146,48 @@ getFEN = function(){
 };
 
 $("document").ready(function(){
-    $(".piece").draggable({
-        drag: function (ev, ui) {
-            $(ui.draggable).css("position", "relative");
-        },
-        revert: true,
-        revertDuration: 10
-    });
-
-    $(".boardsquare").droppable({
-        accept: ".piece",
-        drop: function (ev, ui) {
-            $(ui.draggable).css("position", "auto");
-            $(ui.draggable).css("left", "auto");
-            $(ui.draggable).css("top", "auto");
-            $(this).children(".white").appendTo(".wplayer");
-            $(this).children(".black").appendTo(".bplayer");
-            $(this).append($(ui.draggable));
-						console.log(self.getFEN());
-        }
-    });
-
 		var name = prompt("Please enter alias:");
+		var assignment;
+		var turn; 
 
 		var socket = io.connect();
 		socket.emit("chess_join", name);
 		socket.emit("chat_join", name);
 		socket.on("assign", function(data){
 			alert("You are " + data);
-		});	
+			assignment = data;
+		});
+		socket.on("fen", function(fen){
+			console.log(fen);
+			currentFEN = fen;
+			setFEN(currentFEN);
+		});
+		socket.on("turn", function(move){
+			turn = move;
+		});
+		socket.on("pgn", function(move){
+		});
 
-    //TESTING CODE
-    setFEN(initialFEN);
+		piecesDraggable();
+    $(".boardsquare").droppable({
+        accept: ".piece",
+        drop: function (ev, ui) {
+            $(ui.draggable).css("position", "auto");
+            $(ui.draggable).css("left", "auto");
+            $(ui.draggable).css("top", "auto");
+						$(this).empty();
+            $(this).append($(ui.draggable));
+						if(assignment === "white" && turn){
+							socket.emit("move", getFEN());
+						}
+						else if(assignment === "black" && !turn){
+							socket.emit("move", getFEN());
+						}
+						else{
+							setFEN(currentFEN);
+						}
+        }
+    });
+    //  TESTING CODE
+    //  setFEN(initialFEN);
 });
