@@ -14,6 +14,7 @@ var assignments = ["white", "black", "spectator"];
 var moveLog = [];
 var white;
 var black;
+var names = {};
 
 app.use(express.static(__dirname + "/public"));
 
@@ -24,19 +25,37 @@ game.run();
 currentFEN = game.chessBoard.toFEN();
 
 io.on("connection", function(socket){
-	if(white === undefined){
-		assignClient(socket, 0);
-		initClient(white);
-	}
-	else if(black === undefined){
-		assignClient(socket, 1);
-		initClient(black);
-	}
-	else{
-		assignClient(socket, 2);
-		initClient(socket);
-	}
+	socket.on("chess_join", function(name){
+		if(names[name]){
+			this.name = name + "(" + names[name] + ")";
+			names[name] += 1;
+		}
+		else{
+			this.name = name;
+			names[name] = 1;
+		}
+
+		if(white === undefined){
+			assignClient(socket, 0);
+			initClient(white);
+		}
+		else if(black === undefined){
+			assignClient(socket, 1);
+			initClient(black);
+		}
+		else{
+			assignClient(socket, 2);
+			initClient(socket);
+		}
+
+		io.emit("user_join", this.name);
+	});
+	socket.on("chat_message", function(message){
+		var msg = {user: this.name, msg: message};
+		io.emit("user_message", msg);
+	});
   socket.on("disconnect", function(){
+		io.emit("user_disconnect", this.name);
 		if(socket === white){
 			if(spectators.length === 0){
 				white = undefined;
@@ -58,7 +77,6 @@ io.on("connection", function(socket){
 		}
   });
 	game.interface.on("update", function(arr){
-		console.log("Received");
 		currentFEN = arr[0];
 		moveLog.push(arr[1]);
 		io.emit("fen", arr[0]);
@@ -90,6 +108,7 @@ function assignClient(socket, assign){
 	if(specIndex < 0){
 		spectators.splice(specIndex, 1);
 	}
+	io.emit("user_assign", {user: socket.name, assign: assignments[assign]});
 	switch(assign){
 		case 0:
 			white = socket;

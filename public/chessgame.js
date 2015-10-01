@@ -156,7 +156,6 @@ $("document").ready(function(){
 
 		var socket = io.connect();
 		socket.emit("chess_join", name);
-		socket.emit("chat_join", name);
 		socket.on("assign", function(data){
 			alert("You are " + data);
 			assignment = data;
@@ -195,6 +194,18 @@ $("document").ready(function(){
 			else{
 			}
 		});
+		socket.on("user_join", function(data){
+			$(".chatmessages").append("<p class=\"system_msg\">" + data + " has joined.</p>");
+		});
+		socket.on("user_disconnect", function(data){
+			$(".chatmessages").append("<p class=\"system_msg\">" + data + " has disconnected.</p>");
+		});
+		socket.on("user_assign", function(data){
+			$(".chatmessages").append("<p class=\"system_msg\">" + data.user + " has been assigned to " + data.assign + ".</p>");
+		});
+		socket.on("user_message", function(data){
+			$(".chatmessages").append("<p class=\"chat_msg\">" + data.user + ": " + data.msg + "</p>");
+		});
 
 		piecesDraggable();
     $(".boardsquare").droppable({
@@ -216,6 +227,13 @@ $("document").ready(function(){
 						}
         }
     });
+
+		$(".chatinput").keydown(function(e){
+			if(e.keyCode === 13){
+				socket.emit("chat_message", $(".chatinput").val());
+				$(".chatinput").val("");
+			}
+		});
     //  TESTING CODE
     //  setFEN(initialFEN);
 });

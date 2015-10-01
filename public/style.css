@@ -220,3 +220,11 @@ body, div, p, span, h1, h2, h3, h4, h5, h6, input{
   width: 100%;
   font-size: 2vh;
 }
+
+.system_msg {
+	color: #777777;
+}
+
+.chat_msg {
+	color: #333333;
+}
